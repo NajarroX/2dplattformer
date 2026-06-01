@@ -93,6 +93,26 @@
             border: 3px solid white;
         }
 
+        /* Versión responsive del mensaje de victoria */
+        @media (max-width: 768px) {
+            .victory {
+                padding: 12px 24px;
+                font-size: 1.2rem;
+                white-space: normal;
+                width: 80%;
+                max-width: 300px;
+                line-height: 1.4;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .victory {
+                padding: 10px 20px;
+                font-size: 1rem;
+                width: 85%;
+            }
+        }
+
         button {
             position: absolute;
             bottom: 20px;
@@ -130,10 +150,10 @@
             font-size: 12px;
         }
 
-        /* ========== CONTROLES TÁCTILES MEJORADOS ========== */
+        /* ========== CONTROLES TÁCTILES MEJORADOS - SUBIDOS 50px ========== */
         .touch-controls {
             position: absolute;
-            bottom: 20px;
+            bottom: 70px;  /* Subido desde 20px a 70px (50px más arriba) */
             left: 0;
             right: 0;
             display: none;
@@ -156,43 +176,43 @@
             pointer-events: auto;
         }
 
-        /* Estilo base de los botones arcade blancos */
+        /* Estilo base de los botones arcade - MÁS TRANSPARENTES (15% opacidad) */
         .touch-btn {
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(4px);
-            border: 3px solid rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 36px;
             font-weight: bold;
-            color: #333;
+            color: rgba(255, 255, 255, 0.8);
             cursor: pointer;
             transition: 0.05s linear;
             user-select: none;
             touch-action: manipulation;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             font-family: monospace;
         }
 
         /* Efecto de presión arcade */
         .touch-btn:active {
             transform: scale(0.92);
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         /* Estilo específico para botones de dirección */
         .touch-left, .touch-right {
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         /* Estilo específico para botón de salto */
         .touch-jump {
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
             font-size: 40px;
             font-weight: bold;
         }
@@ -201,7 +221,7 @@
         @media (max-width: 768px) {
             .touch-controls {
                 display: flex;
-                bottom: 15px;
+                bottom: 65px;  /* Subido en móviles también */
                 padding: 15px;
             }
             
@@ -217,28 +237,34 @@
             button {
                 padding: 6px 12px;
                 font-size: 11px;
+                bottom: 15px;
             }
 
             .touch-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 30px;
+                width: 55px;
+                height: 55px;
+                font-size: 28px;
             }
 
             .touch-jump {
-                font-size: 34px;
+                font-size: 32px;
             }
         }
 
         @media (max-width: 480px) {
+            .touch-controls {
+                bottom: 60px;  /* Aún más arriba en pantallas pequeñas */
+                padding: 12px;
+            }
+
             .touch-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 26px;
+                width: 45px;
+                height: 45px;
+                font-size: 24px;
             }
 
             .touch-jump {
-                font-size: 30px;
+                font-size: 28px;
             }
 
             .touch-direction {
@@ -247,14 +273,18 @@
         }
 
         @media (max-width: 380px) {
+            .touch-controls {
+                bottom: 55px;
+            }
+
             .touch-btn {
-                width: 45px;
-                height: 45px;
-                font-size: 22px;
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
             }
 
             .touch-jump {
-                font-size: 26px;
+                font-size: 24px;
             }
         }
     </style>
@@ -328,9 +358,9 @@
         const PLATFORM_Y_MAX = 520;
         const GROUND_Y = 550;
         
-        // Parámetros físicos (AJUSTABLES)
+        // Parámetros físicos (UNIFORMES para todas las plataformas)
         const GRAVITY = 0.16;
-        const JUMP_POWER = -6;
+        const JUMP_POWER = -6.0;
         const PLAYER_SPEED = 4.0;
         
         let gameRunning = true;
@@ -383,34 +413,26 @@
         }
         
         // ========== TEMPLATE "OBRA GRIS" (FONDO MODULAR) ==========
-        // Puedes personalizar fácilmente estos colores y texturas
         const THEME = {
-            // Fondo
             bgColor1: '#2a2a2a',
             bgColor2: '#3a3a3a',
             gridColor: '#4a4a4a',
             gridColorDark: '#555555',
-            
-            // Plataformas
             platformMain: '#6b6b6b',
             platformBorder: '#888888',
-            platformHighlight: '#7a7a7a', // Áreas personalizables
-            
-            // Elementos decorativos (personalizables)
-            customizableColor: '#ff6b6b', // Color que indica zona editable
-            showCustomizableHint: true     // Muestra un borde rojo en zonas editables
+            platformHighlight: '#7a7a7a',
+            customizableColor: '#ff6b6b',
+            showCustomizableHint: true
         };
         
         class GrayBackground {
             draw(cameraX) {
-                // Fondo gris
                 const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
                 grad.addColorStop(0, THEME.bgColor1);
                 grad.addColorStop(1, THEME.bgColor2);
                 ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                // Cuadrícula tipo "obra gris"
                 const gridSize = 40;
                 const startX = Math.floor(cameraX / gridSize) * gridSize;
                 
@@ -418,7 +440,6 @@
                 ctx.strokeStyle = THEME.gridColor;
                 ctx.lineWidth = 1;
                 
-                // Líneas verticales
                 for (let x = startX; x < cameraX + canvas.width + gridSize; x += gridSize) {
                     const screenX = x - cameraX;
                     ctx.beginPath();
@@ -427,7 +448,6 @@
                     ctx.stroke();
                 }
                 
-                // Líneas horizontales
                 for (let y = 0; y < canvas.height; y += gridSize) {
                     ctx.beginPath();
                     ctx.moveTo(0, y);
@@ -435,7 +455,6 @@
                     ctx.stroke();
                 }
                 
-                // Líneas más gruesas cada 4 celdas
                 ctx.beginPath();
                 ctx.strokeStyle = THEME.gridColorDark;
                 ctx.lineWidth = 2;
@@ -454,7 +473,6 @@
                     ctx.stroke();
                 }
                 
-                // Textura sutil de "papel cuadriculado"
                 ctx.fillStyle = 'rgba(255,255,255,0.03)';
                 for (let x = startX; x < cameraX + canvas.width + gridSize; x += gridSize) {
                     for (let y = 0; y < canvas.height; y += gridSize) {
@@ -464,7 +482,7 @@
             }
         }
         
-        // ========== PLATAFORMAS CON INDICADORES PERSONALIZABLES ==========
+        // ========== PLATAFORMAS ==========
         class Platform {
             constructor(x, y, w, h, style = 'default', isCustomizable = false) {
                 this.x = x;
@@ -472,34 +490,28 @@
                 this.w = w;
                 this.h = h;
                 this.style = style;
-                this.isCustomizable = isCustomizable || Math.random() < 0.2; // 20% de plataformas marcadas como personalizables
+                this.isCustomizable = isCustomizable || Math.random() < 0.2;
             }
             
             draw(ctx, cameraX) {
                 const drawX = this.x - cameraX;
                 if (drawX + this.w < 0 || drawX > canvas.width) return;
                 
-                // Plataforma principal
                 ctx.fillStyle = THEME.platformMain;
                 ctx.fillRect(drawX, this.y, this.w, this.h);
                 
-                // Borde superior
                 ctx.fillStyle = THEME.platformBorder;
                 ctx.fillRect(drawX, this.y - 3, this.w, 3);
                 
-                // Indicador de zona personalizable (borde rojo o línea amarilla)
                 if (this.isCustomizable && THEME.showCustomizableHint) {
                     ctx.strokeStyle = THEME.customizableColor;
                     ctx.lineWidth = 2;
                     ctx.strokeRect(drawX + 2, this.y + 2, this.w - 4, this.h - 4);
-                    
-                    // Texto indicador
                     ctx.fillStyle = THEME.customizableColor;
                     ctx.font = "10px monospace";
                     ctx.fillText("🎨", drawX + this.w - 15, this.y - 5);
                 }
                 
-                // Patrón de cuadrícula en la plataforma
                 ctx.fillStyle = 'rgba(255,255,255,0.1)';
                 for(let i = 0; i < this.w; i += 20) {
                     ctx.fillRect(drawX + i, this.y, 2, this.h);
@@ -522,8 +534,6 @@
                     const width = Math.floor(Math.random() * (PLATFORM_WIDTH_MAX - PLATFORM_WIDTH_MIN) + PLATFORM_WIDTH_MIN);
                     const gap = Math.floor(Math.random() * (PLATFORM_GAP_MAX - PLATFORM_GAP_MIN) + PLATFORM_GAP_MIN);
                     const y = Math.floor(Math.random() * (PLATFORM_Y_MAX - PLATFORM_Y_MIN) + PLATFORM_Y_MIN);
-                    
-                    // Alternar estilos de plataforma para el template gris
                     const styles = ['default', 'wide', 'thin'];
                     const style = styles[Math.floor(Math.random() * styles.length)];
                     
@@ -541,12 +551,10 @@
             }
             
             addVerticalPlatforms() {
-                // Plataformas en altura (sección de prueba)
                 for(let i = 2200; i < 3800; i += 400) {
                     this.platforms.push(new Platform(i, 280, 80, 18, 'default', true));
                     this.platforms.push(new Platform(i + 150, 350, 70, 18, 'default', true));
                 }
-                
                 for(let i = 5200; i < 6500; i += 350) {
                     this.platforms.push(new Platform(i, 320, 90, 18, 'default', true));
                     this.platforms.push(new Platform(i + 200, 420, 70, 18, 'default', true));
@@ -651,7 +659,6 @@
                     }
                     ctx.restore();
                 } else {
-                    // Fallback: cuadrado gris
                     ctx.fillStyle = (this.currentAnim === 'jump') ? '#ffaa44' : (this.currentAnim === 'run' ? '#66ccff' : '#88ff88');
                     ctx.fillRect(x - 14, y + 6, 28, 32);
                     ctx.fillStyle = "black";
@@ -768,6 +775,7 @@
         
         let lastTimestamp = 0;
         let cameraX = 0;
+        let victoryMessage = null;
         
         // ========== GAMEPAD DETECTION ==========
         window.addEventListener('gamepadconnected', (e) => {
@@ -790,22 +798,30 @@
             if (player.x >= GOAL_X && !victory) {
                 victory = true;
                 gameRunning = false;
-                const victoryDiv = document.createElement('div');
-                victoryDiv.className = 'victory';
-                victoryDiv.innerText = '✨ ¡Completaste el Template! ✨\n🏗️ Ahora personalízalo 🎨';
-                document.querySelector('.game-container').appendChild(victoryDiv);
+                
+                if (victoryMessage) victoryMessage.remove();
+                victoryMessage = document.createElement('div');
+                victoryMessage.className = 'victory';
+                victoryMessage.innerText = '✨ ¡Completaste el Template! ✨\n🏗️ Ahora personalízalo 🎨';
+                document.querySelector('.game-container').appendChild(victoryMessage);
                 if(animationId) cancelAnimationFrame(animationId);
             }
         }
         
         function resetGame() {
-            const vicMsg = document.querySelector('.victory');
-            if(vicMsg) vicMsg.remove();
+            if (victoryMessage) {
+                victoryMessage.remove();
+                victoryMessage = null;
+            }
+            const existingMsg = document.querySelector('.victory');
+            if (existingMsg) existingMsg.remove();
+            
             victory = false;
             gameRunning = true;
             player.respawn();
             levelGenerator.init();
             lastTimestamp = 0;
+            
             if(animationId) cancelAnimationFrame(animationId);
             animationId = requestAnimationFrame(gameLoop);
         }
@@ -825,13 +841,14 @@
                 cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - canvas.width));
                 updateUI();
                 
-                if (player.x >= GOAL_X) {
+                if (player.x >= GOAL_X && !victory) {
                     gameRunning = false;
                     victory = true;
-                    const victoryDiv = document.createElement('div');
-                    victoryDiv.className = 'victory';
-                    victoryDiv.innerText = '✨ ¡Completaste el Template! ✨\n🏗️ Ahora personalízalo 🎨';
-                    document.querySelector('.game-container').appendChild(victoryDiv);
+                    if (victoryMessage) victoryMessage.remove();
+                    victoryMessage = document.createElement('div');
+                    victoryMessage.className = 'victory';
+                    victoryMessage.innerText = '✨ ¡Completaste el Template! ✨\n🏗️ Ahora personalízalo 🎨';
+                    document.querySelector('.game-container').appendChild(victoryMessage);
                     cancelAnimationFrame(animationId);
                     return;
                 }
@@ -840,7 +857,6 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             grayBg.draw(cameraX);
             
-            // Suelo base
             ctx.fillStyle = "#4a4a4a";
             ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
             ctx.fillStyle = "#5a5a5a";
@@ -855,7 +871,6 @@
         }
         
         // ========== EVENTOS ==========
-        // Teclado
         window.addEventListener('keydown', (e) => {
             const code = e.code;
             if (keys.hasOwnProperty(code)) {
@@ -869,7 +884,6 @@
             if (keys.hasOwnProperty(code)) keys[code] = false;
         });
         
-        // Touch controls
         const touchLeftBtn = document.getElementById('touchLeft');
         const touchRightBtn = document.getElementById('touchRight');
         const touchJumpBtn = document.getElementById('touchJump');
