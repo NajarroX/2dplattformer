@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>OBRA GRIS - Template de Plataformas 2D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        .game-container {
+            background: #2a2a2a;
+            border-radius: 0px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Panel de información */
+        .info-panel {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.8);
+            padding: 8px 14px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            backdrop-filter: blur(4px);
+            pointer-events: none;
+            z-index: 10;
+            font-size: 14px;
+            font-family: monospace;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.6);
+            padding: 6px 12px;
+            border-radius: 16px;
+            color: #ccc;
+            font-size: 12px;
+            font-family: monospace;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .victory {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #2c1810;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 2rem;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            white-space: nowrap;
+            z-index: 20;
+            pointer-events: none;
+            text-align: center;
+            border: 3px solid white;
+        }
+
+        button {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: #555;
+            border: none;
+            color: white;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: inherit;
+            z-index: 15;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #777;
+            transform: scale(1.02);
+        }
+
+        .level-info {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 14px;
+            border-radius: 20px;
+            color: #ffd700;
+            font-weight: bold;
+            backdrop-filter: blur(4px);
+            pointer-events: none;
+            z-index: 10;
+            font-size: 12px;
+        }
+
+        /* ========== CONTROLES TÁCTILES MEJORADOS ========== */
+        .touch-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        /* Contenedor de botones de dirección (izquierda) */
+        .touch-direction {
+            display: flex;
+            gap: 15px;
+            pointer-events: auto;
+        }
+
+        /* Contenedor del botón de salto (derecha) */
+        .touch-jump-container {
+            pointer-events: auto;
+        }
+
+        /* Estilo base de los botones arcade blancos */
+        .touch-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            transition: 0.05s linear;
+            user-select: none;
+            touch-action: manipulation;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-family: monospace;
+        }
+
+        /* Efecto de presión arcade */
+        .touch-btn:active {
+            transform: scale(0.92);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+        }
+
+        /* Estilo específico para botones de dirección */
+        .touch-left, .touch-right {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Estilo específico para botón de salto */
+        .touch-jump {
+            background: rgba(255, 255, 255, 0.6);
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        /* Responsive para móviles */
+        @media (max-width: 768px) {
+            .touch-controls {
+                display: flex;
+                bottom: 15px;
+                padding: 15px;
+            }
+            
+            .controls-hint {
+                display: none;
+            }
+            
+            .info-panel, .level-info {
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+            
+            button {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+
+            .touch-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
+            }
+
+            .touch-jump {
+                font-size: 34px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .touch-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 26px;
+            }
+
+            .touch-jump {
+                font-size: 30px;
+            }
+
+            .touch-direction {
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .touch-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
+            }
+
+            .touch-jump {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <canvas id="gameCanvas"></canvas>
+    <div class="info-panel" id="infoPanel">
+        🏁 Meta: 8000m | 📍 Distancia: 0m
+    </div>
+    <div class="level-info" id="levelInfo">
+        🏗️ OBRA GRIS - TEMPLATE
+    </div>
+    <div class="controls-hint">
+        🎮 ← → | ⬆ Saltar | 🎮 Gamepad compatible
+    </div>
+    <button id="resetBtn">🔄 Reiniciar</button>
+    
+    <!-- Controles táctiles mejorados -->
+    <div class="touch-controls" id="touchControls">
+        <div class="touch-direction">
+            <div class="touch-btn touch-left" id="touchLeft">◀</div>
+            <div class="touch-btn touch-right" id="touchRight">▶</div>
+        </div>
+        <div class="touch-jump-container">
+            <div class="touch-btn touch-jump" id="touchJump">▲</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // ========== FUNCIÓN RESPONSIVE ==========
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const maxWidth = window.innerWidth - 20;
+            const maxHeight = window.innerHeight - 20;
+            const aspectRatio = 1100 / 600;
+            
+            let width = maxWidth;
+            let height = width / aspectRatio;
+            
+            if (height > maxHeight) {
+                height = maxHeight;
+                width = height * aspectRatio;
+            }
+            
+            canvas.width = 1100;
+            canvas.height = 600;
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // ========== CONFIGURACIÓN DEL MUNDO ==========
+        const WORLD_WIDTH = 10000;
+        const GOAL_X = 8000;
+        
+        const PLATFORM_GEN_START_X = 200;
+        const PLATFORM_GEN_END_X = GOAL_X + 500;
+        const PLATFORM_WIDTH_MIN = 70;
+        const PLATFORM_WIDTH_MAX = 200;
+        const PLATFORM_GAP_MIN = 80;
+        const PLATFORM_GAP_MAX = 250;
+        const PLATFORM_Y_MIN = 250;
+        const PLATFORM_Y_MAX = 520;
+        const GROUND_Y = 550;
+        
+        // Parámetros físicos (AJUSTABLES)
+        const GRAVITY = 0.16;
+        const JUMP_POWER = -6;
+        const PLAYER_SPEED = 4.0;
+        
+        let gameRunning = true;
+        let victory = false;
+        let animationId = null;
+        
+        // ========== CONTROLES (TECLADO + TOUCH + GAMEPAD) ==========
+        const keys = {
+            ArrowLeft: false, ArrowRight: false, KeyA: false, KeyD: false,
+            ArrowUp: false, Space: false
+        };
+        
+        // Touch controls state
+        let touchLeft = false;
+        let touchRight = false;
+        let touchJump = false;
+        
+        // Gamepad support
+        let gamepadConnected = false;
+        let gamepadIndex = null;
+        
+        // Función para obtener input combinado (teclado + touch + gamepad)
+        function getInput() {
+            let left = keys.ArrowLeft || keys.KeyA;
+            let right = keys.ArrowRight || keys.KeyD;
+            let jump = keys.ArrowUp || keys.Space;
+            
+            // Touch input
+            if (touchLeft) left = true;
+            if (touchRight) right = true;
+            if (touchJump) jump = true;
+            
+            // Gamepad input
+            if (gamepadConnected && gamepadIndex !== null) {
+                const gamepad = navigator.getGamepads()[gamepadIndex];
+                if (gamepad) {
+                    const axes = gamepad.axes;
+                    const buttons = gamepad.buttons;
+                    
+                    // Eje horizontal (left stick)
+                    if (axes[0] < -0.5) left = true;
+                    if (axes[0] > 0.5) right = true;
+                    
+                    // Botones de salto (A, B, o cualquier botón)
+                    if (buttons[0]?.pressed || buttons[1]?.pressed) jump = true;
+                }
+            }
+            
+            return { left, right, jump };
+        }
+        
+        // ========== TEMPLATE "OBRA GRIS" (FONDO MODULAR) ==========
+        // Puedes personalizar fácilmente estos colores y texturas
+        const THEME = {
+            // Fondo
+            bgColor1: '#2a2a2a',
+            bgColor2: '#3a3a3a',
+            gridColor: '#4a4a4a',
+            gridColorDark: '#555555',
+            
+            // Plataformas
+            platformMain: '#6b6b6b',
+            platformBorder: '#888888',
+            platformHighlight: '#7a7a7a', // Áreas personalizables
+            
+            // Elementos decorativos (personalizables)
+            customizableColor: '#ff6b6b', // Color que indica zona editable
+            showCustomizableHint: true     // Muestra un borde rojo en zonas editables
+        };
+        
+        class GrayBackground {
+            draw(cameraX) {
+                // Fondo gris
+                const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                grad.addColorStop(0, THEME.bgColor1);
+                grad.addColorStop(1, THEME.bgColor2);
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Cuadrícula tipo "obra gris"
+                const gridSize = 40;
+                const startX = Math.floor(cameraX / gridSize) * gridSize;
+                
+                ctx.beginPath();
+                ctx.strokeStyle = THEME.gridColor;
+                ctx.lineWidth = 1;
+                
+                // Líneas verticales
+                for (let x = startX; x < cameraX + canvas.width + gridSize; x += gridSize) {
+                    const screenX = x - cameraX;
+                    ctx.beginPath();
+                    ctx.moveTo(screenX, 0);
+                    ctx.lineTo(screenX, canvas.height);
+                    ctx.stroke();
+                }
+                
+                // Líneas horizontales
+                for (let y = 0; y < canvas.height; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+                
+                // Líneas más gruesas cada 4 celdas
+                ctx.beginPath();
+                ctx.strokeStyle = THEME.gridColorDark;
+                ctx.lineWidth = 2;
+                for (let x = startX; x < cameraX + canvas.width + gridSize; x += gridSize * 4) {
+                    const screenX = x - cameraX;
+                    ctx.beginPath();
+                    ctx.moveTo(screenX, 0);
+                    ctx.lineTo(screenX, canvas.height);
+                    ctx.stroke();
+                }
+                
+                for (let y = 0; y < canvas.height; y += gridSize * 4) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+                
+                // Textura sutil de "papel cuadriculado"
+                ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                for (let x = startX; x < cameraX + canvas.width + gridSize; x += gridSize) {
+                    for (let y = 0; y < canvas.height; y += gridSize) {
+                        ctx.fillRect(x - cameraX, y, 2, 2);
+                    }
+                }
+            }
+        }
+        
+        // ========== PLATAFORMAS CON INDICADORES PERSONALIZABLES ==========
+        class Platform {
+            constructor(x, y, w, h, style = 'default', isCustomizable = false) {
+                this.x = x;
+                this.y = y;
+                this.w = w;
+                this.h = h;
+                this.style = style;
+                this.isCustomizable = isCustomizable || Math.random() < 0.2; // 20% de plataformas marcadas como personalizables
+            }
+            
+            draw(ctx, cameraX) {
+                const drawX = this.x - cameraX;
+                if (drawX + this.w < 0 || drawX > canvas.width) return;
+                
+                // Plataforma principal
+                ctx.fillStyle = THEME.platformMain;
+                ctx.fillRect(drawX, this.y, this.w, this.h);
+                
+                // Borde superior
+                ctx.fillStyle = THEME.platformBorder;
+                ctx.fillRect(drawX, this.y - 3, this.w, 3);
+                
+                // Indicador de zona personalizable (borde rojo o línea amarilla)
+                if (this.isCustomizable && THEME.showCustomizableHint) {
+                    ctx.strokeStyle = THEME.customizableColor;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(drawX + 2, this.y + 2, this.w - 4, this.h - 4);
+                    
+                    // Texto indicador
+                    ctx.fillStyle = THEME.customizableColor;
+                    ctx.font = "10px monospace";
+                    ctx.fillText("🎨", drawX + this.w - 15, this.y - 5);
+                }
+                
+                // Patrón de cuadrícula en la plataforma
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                for(let i = 0; i < this.w; i += 20) {
+                    ctx.fillRect(drawX + i, this.y, 2, this.h);
+                }
+            }
+        }
+        
+        // ========== GENERADOR DE NIVEL ==========
+        class LevelGenerator {
+            constructor() {
+                this.platforms = [];
+                this.lastGenX = 0;
+            }
+            
+            generateSection(startX, endX) {
+                let currentX = startX;
+                const platforms_local = [];
+                
+                while (currentX < endX) {
+                    const width = Math.floor(Math.random() * (PLATFORM_WIDTH_MAX - PLATFORM_WIDTH_MIN) + PLATFORM_WIDTH_MIN);
+                    const gap = Math.floor(Math.random() * (PLATFORM_GAP_MAX - PLATFORM_GAP_MIN) + PLATFORM_GAP_MIN);
+                    const y = Math.floor(Math.random() * (PLATFORM_Y_MAX - PLATFORM_Y_MIN) + PLATFORM_Y_MIN);
+                    
+                    // Alternar estilos de plataforma para el template gris
+                    const styles = ['default', 'wide', 'thin'];
+                    const style = styles[Math.floor(Math.random() * styles.length)];
+                    
+                    platforms_local.push(new Platform(currentX, y, width, 18, style));
+                    currentX += width + gap;
+                }
+                
+                return platforms_local;
+            }
+            
+            init() {
+                this.platforms = this.generateSection(PLATFORM_GEN_START_X, PLATFORM_GEN_END_X);
+                this.addVerticalPlatforms();
+                this.lastGenX = PLATFORM_GEN_END_X;
+            }
+            
+            addVerticalPlatforms() {
+                // Plataformas en altura (sección de prueba)
+                for(let i = 2200; i < 3800; i += 400) {
+                    this.platforms.push(new Platform(i, 280, 80, 18, 'default', true));
+                    this.platforms.push(new Platform(i + 150, 350, 70, 18, 'default', true));
+                }
+                
+                for(let i = 5200; i < 6500; i += 350) {
+                    this.platforms.push(new Platform(i, 320, 90, 18, 'default', true));
+                    this.platforms.push(new Platform(i + 200, 420, 70, 18, 'default', true));
+                }
+            }
+            
+            generateMore(playerX, viewDistance = 1000) {
+                const neededX = playerX + viewDistance;
+                if (this.lastGenX < neededX && this.lastGenX < GOAL_X + 800) {
+                    const newPlatforms = this.generateSection(this.lastGenX, Math.min(this.lastGenX + 1500, GOAL_X + 800));
+                    this.platforms.push(...newPlatforms);
+                    this.lastGenX = Math.min(this.lastGenX + 1500, GOAL_X + 800);
+                }
+            }
+            
+            cleanOldPlatforms(playerX, keepDistance = 1500) {
+                this.platforms = this.platforms.filter(p => p.x + p.w > playerX - keepDistance);
+            }
+            
+            draw(ctx, cameraX) {
+                for (let plat of this.platforms) {
+                    plat.draw(ctx, cameraX);
+                }
+            }
+        }
+        
+        // ========== CONFIGURACIÓN SPRITE ==========
+        const characterConfig = {
+            spriteSheetURL: 'images/spritesheet-template-01.png',
+            frameWidth: 100,
+            frameHeight: 100,
+            animations: {
+                idle:   { row: 0, frames: 4, loop: true, speed: 0.15 },
+                run:    { row: 1, frames: 4, loop: true, speed: 0.12 },
+                jump:   { row: 2, frames: 2, loop: false, speed: 0.1 }
+            },
+            offsetX: 34,
+            offsetY: 59
+        };
+        
+        const spriteImage = new Image();
+        let spriteLoaded = false;
+        spriteImage.onload = () => { spriteLoaded = true; };
+        spriteImage.onerror = () => { spriteLoaded = false; };
+        spriteImage.src = characterConfig.spriteSheetURL;
+        
+        // ========== CLASES DEL JUGADOR Y ANIMACIÓN ==========
+        class SpriteAnimator {
+            constructor(config, img, loadedFlagGetter) {
+                this.config = config;
+                this.img = img;
+                this.isLoaded = loadedFlagGetter;
+                this.currentAnim = 'idle';
+                this.frameIndex = 0;
+                this.accumulator = 0;
+            }
+            
+            setAnimation(animName) {
+                if (this.currentAnim === animName) return;
+                if (this.config.animations[animName]) {
+                    this.currentAnim = animName;
+                    this.frameIndex = 0;
+                    this.accumulator = 0;
+                }
+            }
+            
+            update(deltaTime) {
+                const anim = this.config.animations[this.currentAnim];
+                if (!anim) return;
+                this.accumulator += deltaTime;
+                if (this.accumulator >= anim.speed) {
+                    this.accumulator = 0;
+                    this.frameIndex++;
+                    if (this.frameIndex >= anim.frames) {
+                        if (anim.loop) this.frameIndex = 0;
+                        else this.frameIndex = anim.frames - 1;
+                    }
+                }
+            }
+            
+            draw(ctx, x, y, flipX = false) {
+                const anim = this.config.animations[this.currentAnim];
+                if (!anim) return;
+                const frameW = this.config.frameWidth;
+                const frameH = this.config.frameHeight;
+                const col = this.frameIndex;
+                const row = anim.row;
+                const sx = col * frameW;
+                const sy = row * frameH;
+                
+                const drawX = x - this.config.offsetX;
+                const drawY = y - this.config.offsetY;
+                
+                if (this.isLoaded() && this.img.complete && this.img.naturalWidth > 0) {
+                    ctx.save();
+                    if (flipX) {
+                        ctx.translate(x + (frameW - this.config.offsetX), y - this.config.offsetY);
+                        ctx.scale(-1, 1);
+                        ctx.drawImage(this.img, sx, sy, frameW, frameH, 0, 0, frameW, frameH);
+                    } else {
+                        ctx.drawImage(this.img, sx, sy, frameW, frameH, drawX, drawY, frameW, frameH);
+                    }
+                    ctx.restore();
+                } else {
+                    // Fallback: cuadrado gris
+                    ctx.fillStyle = (this.currentAnim === 'jump') ? '#ffaa44' : (this.currentAnim === 'run' ? '#66ccff' : '#88ff88');
+                    ctx.fillRect(x - 14, y + 6, 28, 32);
+                    ctx.fillStyle = "black";
+                    ctx.fillRect(x - 8, y + 14, 6, 8);
+                    ctx.fillRect(x + 2, y + 14, 6, 8);
+                }
+            }
+        }
+        
+        class Player {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.width = 32;
+                this.height = 38;
+                this.onGround = false;
+                this.facingRight = true;
+                this.animator = new SpriteAnimator(characterConfig, spriteImage, () => spriteLoaded);
+            }
+            
+            update(platforms, deltaTime) {
+                const input = getInput();
+                let move = 0;
+                if (input.left) move = -1;
+                if (input.right) move = 1;
+                this.vx = move * PLAYER_SPEED;
+                this.x += this.vx;
+                
+                if (this.x < 40) this.x = 40;
+                if (this.x > WORLD_WIDTH) this.x = WORLD_WIDTH;
+                
+                this.vy += GRAVITY;
+                this.y += this.vy;
+                
+                this.onGround = false;
+                for (let plat of platforms) {
+                    if (this.checkCollision(plat)) {
+                        this.resolveCollision(plat);
+                    }
+                }
+                
+                if (this.y + this.height >= GROUND_Y && this.vy >= 0) {
+                    this.y = GROUND_Y - this.height;
+                    this.vy = 0;
+                    this.onGround = true;
+                }
+                
+                if (this.y > canvas.height + 200) {
+                    this.respawn();
+                }
+                
+                if (input.jump && this.onGround) {
+                    this.vy = JUMP_POWER;
+                    this.onGround = false;
+                }
+                
+                if (!this.onGround) this.animator.setAnimation('jump');
+                else if (Math.abs(this.vx) > 0.5) this.animator.setAnimation('run');
+                else this.animator.setAnimation('idle');
+                
+                this.animator.update(Math.min(deltaTime, 0.033));
+                if (this.vx !== 0) this.facingRight = this.vx > 0;
+            }
+            
+            checkCollision(platform) {
+                return this.x < platform.x + platform.w &&
+                       this.x + this.width > platform.x &&
+                       this.y < platform.y + platform.h &&
+                       this.y + this.height > platform.y;
+            }
+            
+            resolveCollision(platform) {
+                const overlapTop = (this.y + this.height) - platform.y;
+                const overlapBottom = (platform.y + platform.h) - this.y;
+                const overlapLeft = (this.x + this.width) - platform.x;
+                const overlapRight = (platform.x + platform.w) - this.x;
+                
+                const minOverlap = Math.min(overlapTop, overlapBottom, overlapLeft, overlapRight);
+                if (minOverlap === overlapTop && this.vy >= 0) {
+                    this.y = platform.y - this.height;
+                    this.vy = 0;
+                    this.onGround = true;
+                } else if (minOverlap === overlapBottom && this.vy < 0) {
+                    this.y = platform.y + platform.h;
+                    this.vy = 0;
+                } else if (minOverlap === overlapLeft) {
+                    this.x = platform.x - this.width;
+                } else if (minOverlap === overlapRight) {
+                    this.x = platform.x + platform.w;
+                }
+            }
+            
+            respawn() {
+                this.x = 150;
+                this.y = 480;
+                this.vx = 0;
+                this.vy = 0;
+                this.onGround = false;
+            }
+            
+            draw(ctx, cameraX) {
+                const drawX = this.x - cameraX;
+                const drawY = this.y;
+                this.animator.draw(ctx, drawX, drawY, !this.facingRight);
+            }
+        }
+        
+        // ========== INICIALIZACIÓN ==========
+        const player = new Player(150, 480);
+        const levelGenerator = new LevelGenerator();
+        const grayBg = new GrayBackground();
+        
+        let lastTimestamp = 0;
+        let cameraX = 0;
+        
+        // ========== GAMEPAD DETECTION ==========
+        window.addEventListener('gamepadconnected', (e) => {
+            gamepadConnected = true;
+            gamepadIndex = e.gamepad.index;
+            console.log('🎮 Gamepad conectado');
+        });
+        
+        window.addEventListener('gamepaddisconnected', () => {
+            gamepadConnected = false;
+            gamepadIndex = null;
+            console.log('🎮 Gamepad desconectado');
+        });
+        
+        function updateUI() {
+            const distance = Math.max(0, Math.floor(player.x));
+            const percent = Math.min(100, Math.floor((player.x / GOAL_X) * 100));
+            document.getElementById('infoPanel').innerHTML = `🏁 Meta: ${GOAL_X}m | 📍 Avance: ${distance}m (${percent}%)`;
+            
+            if (player.x >= GOAL_X && !victory) {
+                victory = true;
+                gameRunning = false;
+                const victoryDiv = document.createElement('div');
+                victoryDiv.className = 'victory';
+                victoryDiv.innerText = '✨ ¡Completaste el Template! ✨\n🏗️ Ahora personalízalo 🎨';
+                document.querySelector('.game-container').appendChild(victoryDiv);
+                if(animationId) cancelAnimationFrame(animationId);
+            }
+        }
+        
+        function resetGame() {
+            const vicMsg = document.querySelector('.victory');
+            if(vicMsg) vicMsg.remove();
+            victory = false;
+            gameRunning = true;
+            player.respawn();
+            levelGenerator.init();
+            lastTimestamp = 0;
+            if(animationId) cancelAnimationFrame(animationId);
+            animationId = requestAnimationFrame(gameLoop);
+        }
+        
+        function gameLoop(nowMs) {
+            if (!gameRunning && victory) return;
+            if (!lastTimestamp) lastTimestamp = nowMs;
+            let delta = Math.min(0.033, (nowMs - lastTimestamp) / 1000);
+            if(delta <= 0) { lastTimestamp = nowMs; requestAnimationFrame(gameLoop); return; }
+            lastTimestamp = nowMs;
+            
+            if (!victory) {
+                levelGenerator.generateMore(player.x);
+                levelGenerator.cleanOldPlatforms(player.x);
+                player.update(levelGenerator.platforms, delta);
+                cameraX = player.x - canvas.width/2;
+                cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - canvas.width));
+                updateUI();
+                
+                if (player.x >= GOAL_X) {
+                    gameRunning = false;
+                    victory = true;
+                    const victoryDiv = document.createElement('div');
+                    victoryDiv.className = 'victory';
+                    victoryDiv.innerText = '✨ ¡Completaste el Template! ✨\n🏗️ Ahora personalízalo 🎨';
+                    document.querySelector('.game-container').appendChild(victoryDiv);
+                    cancelAnimationFrame(animationId);
+                    return;
+                }
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            grayBg.draw(cameraX);
+            
+            // Suelo base
+            ctx.fillStyle = "#4a4a4a";
+            ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
+            ctx.fillStyle = "#5a5a5a";
+            for(let i=0;i<30;i++) {
+                ctx.fillRect((i*70 + (cameraX*0.5)%70) - 35, GROUND_Y-6, 25, 8);
+            }
+            
+            levelGenerator.draw(ctx, cameraX);
+            player.draw(ctx, cameraX);
+            
+            animationId = requestAnimationFrame(gameLoop);
+        }
+        
+        // ========== EVENTOS ==========
+        // Teclado
+        window.addEventListener('keydown', (e) => {
+            const code = e.code;
+            if (keys.hasOwnProperty(code)) {
+                keys[code] = true;
+                e.preventDefault();
+            }
+            if (code === 'Space' || code === 'ArrowUp' || code === 'ArrowLeft' || code === 'ArrowRight') e.preventDefault();
+        });
+        window.addEventListener('keyup', (e) => {
+            const code = e.code;
+            if (keys.hasOwnProperty(code)) keys[code] = false;
+        });
+        
+        // Touch controls
+        const touchLeftBtn = document.getElementById('touchLeft');
+        const touchRightBtn = document.getElementById('touchRight');
+        const touchJumpBtn = document.getElementById('touchJump');
+        
+        touchLeftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); touchLeft = true; });
+        touchLeftBtn.addEventListener('touchend', (e) => { e.preventDefault(); touchLeft = false; });
+        touchLeftBtn.addEventListener('mousedown', () => { touchLeft = true; });
+        touchLeftBtn.addEventListener('mouseup', () => { touchLeft = false; });
+        
+        touchRightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); touchRight = true; });
+        touchRightBtn.addEventListener('touchend', (e) => { e.preventDefault(); touchRight = false; });
+        touchRightBtn.addEventListener('mousedown', () => { touchRight = true; });
+        touchRightBtn.addEventListener('mouseup', () => { touchRight = false; });
+        
+        touchJumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); touchJump = true; });
+        touchJumpBtn.addEventListener('touchend', (e) => { e.preventDefault(); touchJump = false; });
+        touchJumpBtn.addEventListener('mousedown', () => { touchJump = true; });
+        touchJumpBtn.addEventListener('mouseup', () => { touchJump = false; });
+        
+        document.getElementById('resetBtn').addEventListener('click', () => { resetGame(); });
+        
+        levelGenerator.init();
+        animationId = requestAnimationFrame(gameLoop);
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    })();
+</script>
+</body>
+</html>
